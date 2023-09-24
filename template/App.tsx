@@ -1,22 +1,25 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
 
-type Props = {}
+import { NavigationContainer } from '@react-navigation/native';
+import '~configs';
+import { useConfigApp } from '~configs';
+import RootNavigation from '~navigation/Root';
+import { I18nextProvider } from 'react-i18next';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import i18next from '~lang';
 
-const App = (props: Props) => {
+const App = () => {
+  useConfigApp();
+
   return (
-    <View style={styles.container}>
-      <Text>App</Text>
-    </View>
-  )
-}
+    <SafeAreaProvider>
+      <I18nextProvider i18n={i18next}>
+        <NavigationContainer>
+          <RootNavigation />
+        </NavigationContainer>
+      </I18nextProvider>
+    </SafeAreaProvider>
+  );
+};
 
-export default App
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-})
+export default App;
