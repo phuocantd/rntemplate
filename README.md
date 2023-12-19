@@ -17,16 +17,12 @@ src
 │   ├── svg
 ├── components
 │   ├── common
-│   ├── global
 ├── configs
 │   ├── constants
 ├── containers
 └── hooks
 └── lang
 └── navigation
-└── redux
-│   ├── actions
-│   ├── reducers
 └── services
-└── utils
+└── types
 ```
