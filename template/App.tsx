@@ -1,14 +1,14 @@
 import React from 'react';
 
-import { NavigationContainer } from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import '~configs';
-import { useConfigApp } from '~configs';
+import {useConfigApp} from '~configs';
 import RootNavigation from '~navigation/Root';
-import { I18nextProvider } from 'react-i18next';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {I18nextProvider} from 'react-i18next';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import i18next from '~lang';
-import { queryClient } from '~services/queryClient';
-import { QueryClientProvider } from '@tanstack/react-query';
+import {queryClient} from '~services/queryClient';
+import {QueryClientProvider} from '@tanstack/react-query';
 
 const App = () => {
   useConfigApp();

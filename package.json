@@ -4,5 +4,6 @@
   "description": "React Native Template",
   "repository": "https://github.com/phuocantd/rntemplate.git",
   "author": "phuocantd",
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "yarn@3.6.4"
 }
