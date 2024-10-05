@@ -1,6 +1,6 @@
 # rntemplate
 
-## Current version: 0.74.6
+## Current version: 0.75.4
 
 ## :arrow_forward: Usage
 
