@@ -36,7 +36,7 @@ export function Radio<TValue extends string | number = string>({
         </Text>
       ) : null}
 
-      <View style={tw`gap-y-2`}>
+      <View>
         {options.map(option => {
           const isSelected = option.value === value;
           const isDisabled = disabled || option.disabled;
@@ -49,6 +49,7 @@ export function Radio<TValue extends string | number = string>({
                 'flex-row items-center rounded-xl border px-3 py-3',
                 isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white',
                 isDisabled ? 'opacity-50' : '',
+                'mb-2',
               )}
             >
               <View
