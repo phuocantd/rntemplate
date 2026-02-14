@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '~store/rootReducer';
+import type { RootState } from '~store';
 
 export const selectAuthState = (state: RootState) => state.auth;
 
@@ -13,19 +13,14 @@ export const selectAuthProfile = createSelector(
   auth => auth.profile,
 );
 
-export const selectAuthWallet = createSelector(
-  selectAuthState,
-  auth => auth.wallet,
-);
-
 export const selectAuthToken = createSelector(
   selectAuthState,
   auth => auth.token,
 );
 
-export const selectAuthLocation = createSelector(
+export const selectAuthRefreshToken = createSelector(
   selectAuthState,
-  auth => auth.location,
+  auth => auth.refreshToken,
 );
 
 export const selectAuthLoading = createSelector(

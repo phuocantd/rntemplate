@@ -1,27 +1,41 @@
-import api from '~services/axios.service';
-import { API } from '~configs/constants';
-
-export interface SignInPayload {
-  email: string;
-  password: string;
-}
-
-export type AuthUser = Record<string, unknown>;
-export type AuthProfile = Record<string, unknown>;
-export type AuthWallet = Record<string, unknown>;
-
-export interface SignInResponse {
-  token: string;
-  user: AuthUser;
-}
+import axios from 'axios';
+import apiClient from '~services/axios.service';
+import { API, API_ROOT } from '~configs/constants';
+import type {
+  AuthProfile,
+  RefreshTokenResponse,
+  SignInPayload,
+  SignInResponse,
+} from '~types';
 
 export const authService = {
   signIn: (payload: SignInPayload): Promise<SignInResponse> =>
-    api.post<SignInResponse>(`/${API.AUTH.LOGIN}`, payload).then(res => res.data),
+    apiClient
+      .post<SignInResponse>(`/${API.AUTH.LOGIN}`, payload, {
+        withCredentials: true,
+      })
+      .then(res => res.data),
+  refreshAccessToken: (
+    refreshToken: string,
+    expiresInMins = 30,
+  ): Promise<RefreshTokenResponse> =>
+    axios
+      .post<RefreshTokenResponse>(
+        `${API_ROOT}/${API.AUTH.REFRESH}`,
+        {
+          refreshToken,
+          expiresInMins,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true,
+        },
+      )
+      .then(res => res.data as RefreshTokenResponse),
   getProfile: (): Promise<AuthProfile> =>
-    api.get<AuthProfile>(`/${API.AUTH.USER}`).then(res => res.data),
+    apiClient.get<AuthProfile>(`/${API.AUTH.USER}`).then(res => res.data),
   deleteAccount: (): Promise<void> =>
-    api.delete<void>(`/${API.AUTH.DELETE_ACCOUNT}`).then(() => undefined),
-  getWallet: (): Promise<AuthWallet> =>
-    api.get<AuthWallet>(`/${API.AUTH.WALLET}`).then(res => res.data),
+    apiClient.delete<void>(`/${API.AUTH.DELETE_ACCOUNT}`).then(() => undefined),
 };

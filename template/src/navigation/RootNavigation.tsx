@@ -1,20 +1,41 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import { AppRoutes } from '~configs/constants';
-import { AboutScreen, HomeScreen } from '~containers';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '~features/auth/auth.selector';
 import { AppStackParamList } from '~types';
+import {
+  AUTH_STACK_INITIAL_ROUTE,
+  AUTH_STACK_SCREENS,
+  APP_STACK_INITIAL_ROUTE,
+  APP_STACK_SCREENS,
+  APP_STACK_SCREEN_OPTIONS,
+} from './stackConfig';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
 const RootNavigation = () => {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
+  const stackKey = isAuthenticated ? 'app-stack' : 'auth-stack';
+  const initialRouteName = isAuthenticated
+    ? APP_STACK_INITIAL_ROUTE
+    : AUTH_STACK_INITIAL_ROUTE;
+  const screens = isAuthenticated ? APP_STACK_SCREENS : AUTH_STACK_SCREENS;
+
   return (
     <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
+      key={stackKey}
+      initialRouteName={initialRouteName}
+      screenOptions={APP_STACK_SCREEN_OPTIONS}
     >
-      <Stack.Screen name={AppRoutes.HOME} component={HomeScreen} />
-      <Stack.Screen name={AppRoutes.ABOUT} component={AboutScreen} />
+      {screens.map(screen => (
+        <Stack.Screen
+          key={screen.name}
+          name={screen.name}
+          component={screen.component}
+          options={screen.options}
+        />
+      ))}
     </Stack.Navigator>
   );
 };
