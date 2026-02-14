@@ -42,7 +42,7 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1`}>
+    <SafeAreaView style={tw`flex-1 bg-gray-50`}>
       <ScrollView
         style={tw`flex-1 bg-gray-50`}
         contentContainerStyle={tw`px-4 py-6`}

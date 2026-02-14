@@ -21,13 +21,22 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "editor.quickSuggestions": {
+    "other": "on",
+    "comments": "off",
+    "strings": "on"
+  },
   "prettier.printWidth": 120,
   "typescript.tsdk": "node_modules/typescript/lib",
+  "tailwindCSS.experimental.configFile": "tailwind.config.js",
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascriptreact"
+  },
+  "tailwindCSS.classAttributes": ["style"],
+  "tailwindCSS.classFunctions": ["tw", "tw.color", "tw.style"],
   "tailwindCSS.experimental.classRegex": [
-    "tw`([^`]*)", // tw`...`
-    "tw=\"([^\"]*)", // <div tw="..." />
-    "tw={\"([^\"}]*)", // <div tw={"..."} />
-    "tw\\.\\w+`([^`]*)", // tw.xxx`...`
-    "tw\\(.*?\\)`([^`]*)" // tw(Component)`...`
+    "tw`([^`]*)",
+    "tw\\.style\\(([^)]*)\\)"
   ]
 }
