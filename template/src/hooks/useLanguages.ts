@@ -17,6 +17,6 @@ export const useLanguages = () => {
   return {
     t,
     onChangeLanguage,
-    currentLanguage: i18n.language,
+    lang: i18n.language,
   };
 };

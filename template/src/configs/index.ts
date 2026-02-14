@@ -1,10 +1,8 @@
-import { useDeviceContext } from 'twrnc';
-import { tw } from './tw';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import '~lang';
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDeviceContext } from 'twrnc';
+import tw from './tw';
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StorageEnum } from './constants';
 
 export const useConfigApp = () => {

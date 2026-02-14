@@ -1,13 +1,10 @@
 {
+  "extends": "@react-native/typescript-config",
+  "include": ["**/*.ts", "**/*.tsx", "src/types/**/*.d.ts"],
+  "exclude": ["**/node_modules", "**/Pods"],
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": {"~*": ["./src/*"]}, 
-    // "jsx": "react-jsx",
-    "jsx": "react", 
-    "module": "es6", 
-    "target": "es6", 
-    "moduleResolution": "node",
-     "allowSyntheticDefaultImports": true 
-  },
-  "exclude": ["node_modules"]
+    "paths": { "~*": ["./src/*"] },
+    "typeRoots": ["./node_modules/@types", "./src/types"]
+  }
 }
