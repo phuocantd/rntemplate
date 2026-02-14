@@ -1,41 +1,47 @@
-import axios from 'axios';
-import apiClient from '~services/axios.service';
-import { API, API_ROOT } from '~configs/constants';
+import { API } from '~configs/constants';
 import type {
   AuthProfile,
   RefreshTokenResponse,
   SignInPayload,
   SignInResponse,
 } from '~types';
+import request from '~utils/request';
 
 export const authService = {
   signIn: (payload: SignInPayload): Promise<SignInResponse> =>
-    apiClient
-      .post<SignInResponse>(`/${API.AUTH.LOGIN}`, payload, {
-        withCredentials: true,
-      })
-      .then(res => res.data),
+    request<SignInResponse, SignInPayload>({
+      method: 'POST',
+      url: API.AUTH.LOGIN,
+      data: payload,
+      withCredentials: true,
+    }).then(res => res.data),
   refreshAccessToken: (
     refreshToken: string,
     expiresInMins = 30,
   ): Promise<RefreshTokenResponse> =>
-    axios
-      .post<RefreshTokenResponse>(
-        `${API_ROOT}/${API.AUTH.REFRESH}`,
-        {
-          refreshToken,
-          expiresInMins,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true,
-        },
-      )
-      .then(res => res.data as RefreshTokenResponse),
+    request<
+      RefreshTokenResponse,
+      { refreshToken: string; expiresInMins: number }
+    >({
+      method: 'POST',
+      url: API.AUTH.REFRESH,
+      data: {
+        refreshToken,
+        expiresInMins,
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    }).then(res => res.data),
   getProfile: (): Promise<AuthProfile> =>
-    apiClient.get<AuthProfile>(`/${API.AUTH.USER}`).then(res => res.data),
+    request<AuthProfile>({
+      method: 'GET',
+      url: API.AUTH.USER,
+    }).then(res => res.data),
   deleteAccount: (): Promise<void> =>
-    apiClient.delete<void>(`/${API.AUTH.DELETE_ACCOUNT}`).then(() => undefined),
+    request<void>({
+      method: 'DELETE',
+      url: API.AUTH.DELETE_ACCOUNT,
+    }).then(() => undefined),
 };
