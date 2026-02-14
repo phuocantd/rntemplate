@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { useDeviceContext } from 'twrnc';
 import tw from './tw';
 import { useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StorageEnum } from './constants';
+import { mmkv } from '~store/mmkvStorage';
 
 export const useConfigApp = () => {
   const { i18n } = useTranslation();
@@ -12,7 +12,7 @@ export const useConfigApp = () => {
   useEffect(() => {
     const initLanguage = async () => {
       try {
-        const language = await AsyncStorage.getItem(StorageEnum.LANGUAGE);
+        const language = mmkv.getString(StorageEnum.LANGUAGE);
         if (language) {
           await i18n.changeLanguage(language);
         }

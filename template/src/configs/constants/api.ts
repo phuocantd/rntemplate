@@ -5,5 +5,7 @@ export const API = {
     LOGIN: 'auth/login',
     REFRESH: 'auth/refresh',
     USER: 'auth/me',
+    DELETE_ACCOUNT: 'auth/delete',
+    WALLET: 'wallet',
   },
 };

@@ -1,48 +1,71 @@
-import { createSlice, PayloadAction, createAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  type AuthProfile,
+  type AuthUser,
+  type AuthWallet,
+  type SignInPayload,
+  type SignInResponse,
+} from '~services/api';
 import { buildRequestReducer } from '~utils/buildRequest';
 import { createRequestActions } from '~utils/createRequestActions';
 
 export interface AuthState {
-  user?: any;
-  profile?: any;
+  user?: AuthUser;
+  profile?: AuthProfile;
   isLogged: boolean;
   token: string | null;
-  wallet?: any;
-  location: {
-    latitude: number;
-    longitude: number;
-    formatted_address: string;
-    place_id: string;
-  };
+  wallet?: AuthWallet;
+  location: AuthLocation;
   loading: boolean;
   error: string | null;
 }
 
-const INITIAL_STATE: AuthState = {
+export interface AuthLocation {
+  latitude: number;
+  longitude: number;
+  formatted_address: string;
+  place_id: string;
+}
+
+const INITIAL_LOCATION: AuthLocation = {
+  latitude: 0,
+  longitude: 0,
+  formatted_address: '',
+  place_id: '',
+};
+
+export const INITIAL_STATE: AuthState = {
   user: undefined,
   profile: undefined,
   isLogged: false,
   token: null,
   wallet: undefined,
-  location: {
-    latitude: 0,
-    longitude: 0,
-    formatted_address: '',
-    place_id: '',
-  },
+  location: INITIAL_LOCATION,
   loading: false,
   error: null,
 };
 
+function resetAuthSession(state: AuthState) {
+  state.isLogged = false;
+  state.token = null;
+  state.user = undefined;
+  state.profile = undefined;
+  state.wallet = undefined;
+}
+
 // --- CREATE ACTION GROUPS ---
 export const signInActions = createRequestActions<
-  { email: string; password: string },
-  { token: string; user: any },
+  SignInPayload,
+  SignInResponse,
   string
 >('auth/signIn');
 export const deleteAccountActions = createRequestActions('auth/deleteAccount');
-export const getProfileActions = createRequestActions('auth/getProfile');
-export const getWalletActions = createRequestActions('auth/getWallet');
+export const getProfileActions = createRequestActions<void, AuthProfile, string>(
+  'auth/getProfile',
+);
+export const getWalletActions = createRequestActions<void, AuthWallet, string>(
+  'auth/getWallet',
+);
 
 export const authSlice = createSlice({
   name: 'auth',
@@ -52,54 +75,39 @@ export const authSlice = createSlice({
       Object.assign(state, action.payload);
     },
     logout(state) {
-      state.isLogged = false;
-      state.token = null;
-      state.user = undefined;
-      state.profile = undefined;
-      state.wallet = undefined;
+      resetAuthSession(state);
     },
   },
   extraReducers: builder => {
     // --- SIGN IN ---
-    buildRequestReducer<
-      AuthState,
-      { email: string; password: string },
-      { token: string; user: any },
-      string
-    >(builder, signInActions, (state, action) => {
-      state.token = action.payload.token;
-      state.user = action.payload.user;
-      state.isLogged = true;
+    buildRequestReducer(builder, signInActions, {
+      onSuccess: (state, action) => {
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+        state.isLogged = true;
+      },
     });
 
     // --- DELETE ACCOUNT ---
-    buildRequestReducer<AuthState, void, void, string>(
-      builder,
-      deleteAccountActions,
-      state => {
-        state.isLogged = false;
-        state.user = undefined;
-        state.token = null;
+    buildRequestReducer(builder, deleteAccountActions, {
+      onSuccess: state => {
+        resetAuthSession(state);
       },
-    );
+    });
 
     // --- PROFILE ---
-    buildRequestReducer<AuthState, void, any, string>(
-      builder,
-      getProfileActions,
-      (state, action) => {
+    buildRequestReducer(builder, getProfileActions, {
+      onSuccess: (state, action) => {
         state.profile = action.payload;
       },
-    );
+    });
 
     // --- WALLET ---
-    buildRequestReducer<AuthState, void, any, string>(
-      builder,
-      getWalletActions,
-      (state, action) => {
+    buildRequestReducer(builder, getWalletActions, {
+      onSuccess: (state, action) => {
         state.wallet = action.payload;
       },
-    );
+    });
   },
 });
 

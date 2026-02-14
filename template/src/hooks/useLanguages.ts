@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { LanguageEnum, StorageEnum } from '~configs/constants';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { mmkv } from '~store/mmkvStorage';
 
 export const useLanguages = () => {
   const { i18n, t } = useTranslation();
@@ -8,7 +8,7 @@ export const useLanguages = () => {
   const onChangeLanguage = async (lang: LanguageEnum) => {
     try {
       await i18n.changeLanguage(lang);
-      await AsyncStorage.setItem(StorageEnum.LANGUAGE, lang);
+      mmkv.set(StorageEnum.LANGUAGE, lang);
     } catch (error) {
       console.log('error', error);
     }
