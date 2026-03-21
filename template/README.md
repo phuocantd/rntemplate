@@ -32,6 +32,30 @@ npm run android
 yarn android
 ```
 
+### Android flavors
+
+This template includes environment-based Android flavors and matching scripts:
+
+```sh
+npm run dev
+npm run stag
+npm run prod
+```
+
+To generate Android artifacts with the correct `.env` file:
+
+```sh
+npm run devapk
+npm run stagapk
+npm run prodapk
+
+npm run devaab
+npm run stagaab
+npm run prodaab
+```
+
+If you build directly from Android Studio or run Gradle yourself, make sure the selected flavor matches the intended environment. The flavor mapping is configured in `android/app/build.gradle`, and the npm scripts also pass `ENVFILE` explicitly.
+
 ### iOS
 
 For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).

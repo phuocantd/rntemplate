@@ -2,6 +2,17 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+project.ext.envConfigFiles = [
+    devdebug: ".env.dev",
+    devrelease: ".env.dev",
+
+    stagdebug: ".env.stag",
+    stagrelease: ".env.stag",
+
+    proddebug: ".env.prod",
+    prodrelease: ".env.prod",
+]
+
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 /**
@@ -59,8 +70,9 @@ react {
 
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ * Keep this off in the template until the release flow is verified end-to-end.
  */
-def enableProguardInReleaseBuilds = true
+def enableProguardInReleaseBuilds = false
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -74,17 +86,6 @@ def enableProguardInReleaseBuilds = true
  * this variant is about 6MiB larger per architecture than default.
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
-
-project.ext.envConfigFiles = [
-    devdebug: ".env.dev",
-    devrelease: ".env.dev",
-
-    stagdebug: ".env.stag",
-    stagrelease: ".env.stag",
-
-    proddebug: ".env.prod",
-    prodrelease: ".env.prod",
-]
 
 def env = project.env ?: [:]
 println("ANDROID BUILD ENV = " + env.get("ENV"))
