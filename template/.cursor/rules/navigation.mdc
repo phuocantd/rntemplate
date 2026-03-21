@@ -1,0 +1,60 @@
+---
+description: React Navigation v7 conventions and patterns
+globs: src/navigation/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Navigation
+
+## Route Names — use `AppRoutes` enum
+
+```ts
+// ✅ GOOD
+navigation.navigate(AppRoutes.Home);
+
+// ❌ BAD — magic strings
+navigation.navigate('Home');
+```
+
+## Adding a New Screen
+
+1. Add route to `AppRoutes` enum in `src/configs/constants/routes.ts`.
+2. Add param type to `AppStackParamList` or `AuthStackParamList` in `src/types/navigation.type.ts`.
+3. Add `{ name, component, options }` entry to the appropriate array in `src/navigation/stackConfig.ts`.
+
+```ts
+// stackConfig.ts — screens are declarative, iterated with .map()
+export const appScreens: ScreenConfig<AppStackParamList>[] = [
+  { name: AppRoutes.Home, component: Home },
+  { name: AppRoutes.About, component: About },
+  // add here
+];
+```
+
+## Navigation Inside Components
+
+Use typed wrappers — never the raw hooks:
+
+```ts
+// ✅ GOOD
+const navigation = useAppNavigation<AppStackParamList>();
+const route = useAppRoute<AppRoutes.Home>();
+
+// ❌ BAD
+const navigation = useNavigation();
+```
+
+## Navigation Outside React (sagas, services)
+
+Use `NavigationService` singleton — never import `navigationRef` directly:
+
+```ts
+import { NavigationService } from '~services/navigation.service';
+
+NavigationService.navigate(AppRoutes.Home);
+NavigationService.reset({ index: 0, routes: [{ name: AppRoutes.Login }] });
+```
+
+## Auth Guard
+
+Auth/App stack switching is handled by `RootNavigation` using `selectIsAuthenticated`. Do **not** replicate this guard inside individual screens.

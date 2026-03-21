@@ -7,27 +7,20 @@ import { useMemo } from 'react';
 import type { BasePageParam, UseBaseInfiniteConfig } from '~types';
 import {
   buildBaseQueryKey,
-  defaultGetNextPageParam,
-  getListSize,
-  getNextParamByMode,
+  buildPaginatedGetNextPageParam,
   getNumberField,
   pickFields,
-  runBaseRequest,
-  resolveArrayKey,
   resolveInitialPageParam,
+  runBaseRequest,
 } from '~utils/helpers';
 
 /**
- * Infinite query hook with built-in pagination helpers.
- * Returns React Query result plus:
- * - `fetchMore`: alias of `fetchNextPage`
- * - `total`: value from `totalKey` on first page
- * - `fields`: picked metadata fields from first page
- * @param config Infinite config:
- * - request: `url`, optional `method`, `params`, `data`, `headers`, ...
- * - pagination: `pageParamKey`, `initialPageParam`, `totalKey`, `limitKey`, `keyArray`
- * - metadata: `fields` to pick from first page
- * - react-query: optional `queryKey`, `options`, and custom `getNextPageParam`
+ * Infinite query hook with built-in pagination.
+ *
+ * Returns all standard React Query fields plus:
+ * - `fetchMore` — alias of `fetchNextPage`
+ * - `total`     — total item count read from the first page
+ * - `fields`    — picked metadata fields from the first page
  */
 export function useBaseInfinite<
   TResponse = unknown,
@@ -49,10 +42,10 @@ export function useBaseInfinite<
     ...requestConfig
   } = config;
 
-  const pageParamKeyAsString = String(pageParamKey);
+  const pageParamKeyStr = String(pageParamKey);
   const resolvedInitialPageParam = resolveInitialPageParam(
     initialPageParam,
-    pageParamKeyAsString,
+    pageParamKeyStr,
   );
 
   const query = useInfiniteQuery<
@@ -74,38 +67,12 @@ export function useBaseInfinite<
       }),
     getNextPageParam:
       getNextPageParam ??
-      ((lastPage, allPages, lastPageParam) => {
-        const firstPage = allPages[0];
-        const total =
-          getNumberField(lastPage, totalKey) ??
-          getNumberField(firstPage, totalKey);
-        const limit =
-          getNumberField(lastPage, limitKey) ??
-          getNumberField(firstPage, limitKey);
-        const resolvedListKey =
-          resolveArrayKey(lastPage, keyArray) ??
-          resolveArrayKey(firstPage, keyArray);
-
-        if (
-          typeof total === 'number' &&
-          total >= 0 &&
-          limit &&
-          resolvedListKey
-        ) {
-          const loadedCount = allPages.reduce(
-            (sum, page) => sum + getListSize(page, resolvedListKey),
-            0,
-          );
-
-          if (loadedCount >= total) {
-            return undefined;
-          }
-
-          return getNextParamByMode(lastPageParam, pageParamKeyAsString, limit);
-        }
-
-        return defaultGetNextPageParam(lastPage);
-      }),
+      buildPaginatedGetNextPageParam<TResponse>(
+        totalKey,
+        limitKey,
+        keyArray,
+        pageParamKeyStr,
+      ),
     ...options,
   });
 
@@ -116,13 +83,10 @@ export function useBaseInfinite<
     [firstPage, selectedFields],
   );
 
-  const hasNextPage = Boolean(query.hasNextPage);
-  const fetchMore = query.fetchNextPage;
-
   return {
     ...query,
-    hasNextPage,
-    fetchMore,
+    hasNextPage: Boolean(query.hasNextPage),
+    fetchMore: query.fetchNextPage,
     total,
     fields,
   };

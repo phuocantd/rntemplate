@@ -1,18 +1,12 @@
-import {
-  useQuery,
-} from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import type { UseBaseQueryConfig } from '~types';
-import {
-  buildBaseQueryKey,
-  runBaseRequest,
-} from '~utils/helpers';
+import { buildBaseQueryKey, runBaseRequest } from '~utils/helpers';
 
 /**
- * Generic query hook that maps request config directly to React Query.
- * Pass `url`, optional `params/data`, and React Query `options` when needed.
- * @param config Hook config:
- * - request: `url`, optional `method`, `params`, `data`, `headers`, ...
- * - query: optional `queryKey`, `options` from React Query.
+ * Query hook that maps a request config directly to React Query.
+ *
+ * Pass `url` and optional `params` / `data`; the query key is auto-derived
+ * from the request identity unless `queryKey` is provided explicitly.
  */
 export function useBaseQuery<
   TResponse = unknown,

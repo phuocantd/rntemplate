@@ -3,11 +3,10 @@ import type { UseBaseMutationConfig } from '~types';
 import { runBaseRequest } from '~utils/helpers';
 
 /**
- * Generic mutation hook with overridable variables at call time.
- * Base config defines defaults; `mutate(variables)` can override method/url/data/params.
- * @param config Base mutation config:
- * - request defaults: `url`, optional `method`, `data`, `params`, `headers`, ...
- * - mutation options: React Query `options`.
+ * Mutation hook with per-call overrides.
+ *
+ * Base config sets defaults; calling `mutate(variables)` can override
+ * `method`, `url`, `data`, `params`, or any other request field at call time.
  */
 export function useBaseMutation<
   TResponse = unknown,
@@ -17,15 +16,24 @@ export function useBaseMutation<
   const { options, method, ...baseConfig } = config;
 
   return useMutation({
-    mutationFn: (variables = {}) =>
-      runBaseRequest<TResponse, TData, TParams>({
+    mutationFn: (variables = {}) => {
+      const {
+        method: varMethod,
+        url: varUrl,
+        data: varData,
+        params: varParams,
+        ...otherVars
+      } = variables;
+
+      return runBaseRequest<TResponse, TData, TParams>({
         ...baseConfig,
-        ...variables,
-        method: variables.method ?? method ?? 'POST',
-        url: variables.url ?? baseConfig.url,
-        data: (variables.data ?? baseConfig.data) as TData | undefined,
-        params: (variables.params ?? baseConfig.params) as TParams | undefined,
-      }),
+        ...otherVars,
+        method: varMethod ?? method ?? 'POST',
+        url: varUrl ?? baseConfig.url,
+        data: (varData ?? baseConfig.data) as TData | undefined,
+        params: (varParams ?? baseConfig.params) as TParams | undefined,
+      });
+    },
     ...options,
   });
 }

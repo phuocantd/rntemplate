@@ -1,0 +1,111 @@
+---
+description: API service layer and HTTP request conventions
+globs: src/{services,features,hooks,containers}/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Services & API
+
+## Which Approach to Use
+
+| Context | Approach |
+|---|---|
+| Fetching / mutating data **inside a component** | `useBaseQuery` / `useBaseMutation` / `useBaseInfinite` (pass `url` directly) |
+| API call triggered **from a Redux saga** | Service object → `request` wrapper |
+
+---
+
+## React Query Path (preferred for components)
+
+Pass `url` directly to the base hooks — **no service object needed**:
+
+```ts
+// ✅ GOOD — url goes straight to the hook
+const { data, isLoading } = useBaseQuery<Post[]>({ url: '/posts' });
+
+const { mutate } = useBaseMutation<Post, CreatePostPayload>({
+  url: '/posts',
+  method: 'POST',
+  options: { onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }) },
+});
+
+// ❌ BAD — wrapping in a service just to call it from a hook
+const { data } = useBaseQuery({ url: postService.getAll }); // postService is unnecessary here
+```
+
+---
+
+## Redux Saga Path (for global state / auth flows)
+
+Create a service object in `src/services/api/<feature>.service.ts` and call it from sagas.
+
+### Service Object Pattern — plain objects, not classes
+
+```ts
+// ✅ GOOD
+export const postService = {
+  getById: (id: string): Promise<Post> => request.get(`/posts/${id}`),
+  create: (payload: CreatePostPayload): Promise<Post> => request.post('/posts', payload),
+};
+
+// ❌ BAD — class-based service
+class PostService { ... }
+```
+
+### Use `request` wrapper — never call `axios` directly
+
+```ts
+import request from '~utils/request';
+
+const data = await request.get<ResponseType>('/endpoint');
+const data = await request.post<ResponseType>('/endpoint', payload);
+```
+
+### Saga wires the service call
+
+```ts
+const createPostSaga = createRequestSaga(createPostActions, postService.create);
+
+export function* postSaga() {
+  yield takeLatest(createPostActions.request, createPostSaga);
+}
+```
+
+---
+
+## Token Refresh
+
+Lives in `src/services/axios.service.ts` interceptors only. Do **not** handle 401 retries anywhere else.
+
+## Environment Variables
+
+```ts
+// ✅ GOOD — from react-native-config via src/configs/constants/api.ts
+import { API_URL } from '~configs/constants';
+
+// ❌ BAD
+const url = 'https://api.example.com';
+```
+
+## Storage
+
+```ts
+import { StorageService } from '~services/storage.service';
+import { StorageEnum } from '~configs/constants';
+
+StorageService.set(StorageEnum.AccessToken, token);
+const token = StorageService.getString(StorageEnum.AccessToken);
+```
+
+---
+
+## Adding a New Feature — Checklist
+
+**React Query only (no global state needed):**
+- Use `useBaseQuery` / `useBaseMutation` / `useBaseInfinite` directly in the container.
+
+**Requires global Redux state (e.g. persisted auth):**
+1. Create `src/services/api/<feature>.service.ts`
+2. Create `src/features/<feature>/` with `actions.ts`, `saga.ts`, `slice.ts`, `selector.ts`
+3. Register saga in `src/store/rootSaga.ts`
+4. Add reducer to `src/store/rootReducer.ts`

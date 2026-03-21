@@ -1,4 +1,4 @@
-import { isObject } from './object.helper';
+import { isObject, getNumberField, resolveArrayKey, getListSize } from './object.helper';
 import type { BasePageParam } from '~types';
 
 /**
@@ -49,6 +49,52 @@ export function getNextParamByMode(
   }
 
   return undefined;
+}
+
+/**
+ * Builds the default `getNextPageParam` callback for `useBaseInfinite`.
+ * Handles both page-number mode and offset/skip mode, with a fallback to
+ * `nextPage` / `next` fields returned by the API.
+ * @param totalKey Response field that holds total item count.
+ * @param limitKey Response field that holds page size.
+ * @param keyArray Response field that holds the items array.
+ * @param pageParamKey Pagination param name injected into the request.
+ */
+export function buildPaginatedGetNextPageParam<TResponse>(
+  totalKey: string,
+  limitKey: string,
+  keyArray: string,
+  pageParamKey: string,
+) {
+  return (
+    lastPage: TResponse,
+    allPages: TResponse[],
+    lastPageParam: BasePageParam,
+  ): BasePageParam | undefined => {
+    const firstPage = allPages[0];
+
+    const total =
+      getNumberField(lastPage, totalKey) ?? getNumberField(firstPage, totalKey);
+    const limit =
+      getNumberField(lastPage, limitKey) ?? getNumberField(firstPage, limitKey);
+    const resolvedListKey =
+      resolveArrayKey(lastPage, keyArray) ?? resolveArrayKey(firstPage, keyArray);
+
+    if (typeof total === 'number' && total >= 0 && limit && resolvedListKey) {
+      const loadedCount = allPages.reduce(
+        (sum, page) => sum + getListSize(page, resolvedListKey),
+        0,
+      );
+
+      if (loadedCount >= total) {
+        return undefined;
+      }
+
+      return getNextParamByMode(lastPageParam, pageParamKey, limit);
+    }
+
+    return defaultGetNextPageParam(lastPage);
+  };
 }
 
 /**

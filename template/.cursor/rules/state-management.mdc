@@ -1,0 +1,162 @@
+---
+description: Redux Toolkit + redux-saga and TanStack React Query conventions
+globs: src/{features,store,hooks}/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# State Management
+
+## Two-track Architecture
+
+| Track | Tool | Use For |
+|---|---|---|
+| Global / persistent UI state | Redux Toolkit + redux-saga | Auth session, user profile |
+| Server / async data | TanStack React Query | API calls, caching |
+
+---
+
+## Redux Feature Structure
+
+Each feature lives in `src/features/<name>/` with these files:
+
+```
+features/auth/
+├── auth.actions.ts     # createRequestActions triplets
+├── auth.saga.ts        # watchers + workers
+├── auth.slice.ts       # state shape + extraReducers
+├── auth.selector.ts    # memoized selectors
+├── auth.helpers.ts     # pure helper functions
+└── index.ts            # barrel export
+```
+
+### Actions — use `createRequestActions`
+
+```ts
+// ✅ GOOD — generates request / success / failure actions automatically
+export const signInActions = createRequestActions<SignInPayload, SignInResponse>(
+  'auth/signIn',
+);
+
+// ❌ BAD — manually creating action creators
+const signInRequest = createAction<SignInPayload>('auth/signInRequest');
+```
+
+### Saga — use `createRequestSaga`
+
+```ts
+const signInSaga = createRequestSaga(signInActions, authService.signIn);
+
+export function* authSaga() {
+  yield takeLatest(signInActions.request, signInSaga);
+}
+```
+
+### Slice — use `buildRequest` helper
+
+```ts
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: { logout: () => initialState },
+  extraReducers: builder => {
+    buildRequest(builder, signInActions, (state, action) => {
+      state.token = action.payload.token;
+    });
+  },
+});
+```
+
+### Selectors — always memoize with `createSelector`
+
+```ts
+// ✅ GOOD
+export const selectIsAuthenticated = createSelector(
+  selectAuthToken,
+  token => !!token,
+);
+
+// ❌ BAD — inline derivation without memoization
+const isAuth = useAppSelector(state => !!state.auth.token);
+```
+
+---
+
+## React Query Hooks
+
+**Always prefer the 3 base hooks** over calling `useQuery` / `useMutation` / `useInfiniteQuery` directly. They wrap `runBaseRequest` internally — you only provide `url` + optional config, no `queryFn` needed.
+
+### `useBaseQuery` — for GET / read requests
+
+```ts
+import { useBaseQuery } from '~hooks';
+
+const { data, isLoading, isError } = useBaseQuery<UserProfile>({
+  url: '/profile',
+  // optional: params, headers, queryKey, options
+  queryKey: ['profile', userId],
+  options: { staleTime: 60_000 },
+});
+
+// ❌ BAD — calling useQuery directly bypasses shared config
+const { data } = useQuery({ queryKey: ['profile'], queryFn: () => axios.get('/profile') });
+```
+
+### `useBaseMutation` — for POST / PUT / PATCH / DELETE
+
+```ts
+import { useBaseMutation } from '~hooks';
+
+const { mutate, isPending } = useBaseMutation<SignInResponse, SignInPayload>({
+  url: '/auth/sign-in',
+  method: 'POST',         // default is 'POST' if omitted
+  options: {
+    onSuccess: (data) => { /* handle success */ },
+    onError: (error) => { /* handle error */ },
+  },
+});
+
+// Call with payload — can override url/method/data/params at call time
+mutate({ data: { email, password } });
+
+// ❌ BAD
+const { mutate } = useMutation({ mutationFn: (body) => axios.post('/auth/sign-in', body) });
+```
+
+### `useBaseInfinite` — for paginated / infinite lists
+
+```ts
+import { useBaseInfinite } from '~hooks';
+
+const { data, fetchMore, hasNextPage, total, isLoading } =
+  useBaseInfinite<ListResponse, unknown, { page: number; limit: number }>({
+    url: '/posts',
+    params: { limit: 20 },
+    pageParamKey: 'page',     // key injected into params for each page
+    totalKey: 'total',        // key in response that holds total count
+    limitKey: 'limit',        // key in response that holds page size
+    keyArray: 'data',         // key in response that holds the items array
+  });
+
+// fetchMore is an alias of fetchNextPage
+<FlatList onEndReached={fetchMore} data={data?.pages.flatMap(p => p.data)} />
+
+// ❌ BAD
+const { data } = useInfiniteQuery({ queryKey: [...], queryFn: ..., getNextPageParam: ... });
+```
+
+### Decision Guide
+
+| Scenario | Hook to use |
+|---|---|
+| Read data (GET) | `useBaseQuery` |
+| Create / Update / Delete | `useBaseMutation` |
+| Paginated list / infinite scroll | `useBaseInfinite` |
+| Global auth state / side effects across sagas | Redux + saga |
+
+---
+
+## Persistence
+
+- Only the `auth` slice is persisted (MMKV via `mmkvStorage` adapter).
+- Never add new slices to the persist whitelist without considering privacy and performance.
+- Never import `AsyncStorage` — always use `StorageService` or MMKV directly.

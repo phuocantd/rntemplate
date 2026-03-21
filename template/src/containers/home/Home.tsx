@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { Header, Safe, Wrapper } from '~components/common';
 import { FormInput } from '~components/input';
 import tw from '~configs/tw';
 import { logout, selectAuthUser } from '~features/auth';
@@ -47,7 +47,8 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-gray-50`}>
+    <Wrapper>
+      <Header title="Home" />
       <ScrollView
         style={tw`flex-1 bg-gray-50`}
         contentContainerStyle={tw`px-4 py-6`}
@@ -166,8 +167,9 @@ const Home = () => {
             </Text>
           </View>
         ) : null}
+        <Safe />
       </ScrollView>
-    </SafeAreaView>
+    </Wrapper>
   );
 };
 

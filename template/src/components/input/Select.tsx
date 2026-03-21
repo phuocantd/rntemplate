@@ -3,6 +3,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -72,10 +73,10 @@ export function Select<TValue extends string | number = string>({
         <View
           style={[
             tw`flex-1 justify-center px-6`,
-            { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+            styles.overlay,
           ]}
         >
-          <View style={[tw`bg-white rounded-2xl`, { maxHeight: '70%' }]}>
+          <View style={[tw`bg-white rounded-2xl`, styles.modalContainer]}>
             <View style={tw`flex-row items-center justify-between px-4 py-4 border-b border-gray-200`}>
               <Text style={tw`text-base font-semibold text-gray-900`}>
                 {modalTitle}
@@ -121,3 +122,12 @@ export function Select<TValue extends string | number = string>({
 }
 
 export default Select;
+
+const styles = StyleSheet.create({
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    maxHeight: '70%',
+  },
+});

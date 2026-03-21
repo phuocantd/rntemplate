@@ -1,0 +1,53 @@
+---
+description: Core project conventions and naming standards for the React Native template
+alwaysApply: true
+---
+
+# React Native Template — Project Overview
+
+## Tech Stack
+
+- **React Native 0.84** with **TypeScript**
+- **Redux Toolkit + redux-saga** for global state; **TanStack React Query v5** for server state
+- **twrnc** for styling (Tailwind classes), **react-hook-form + yup** for forms
+- **React Navigation v7** (native-stack), **i18next** for i18n
+- **MMKV** for persistent storage (not AsyncStorage), **axios** for HTTP
+
+## Folder Structure
+
+```
+src/
+├── components/      # Reusable, presentational only
+├── configs/         # constants/, globalRefs.ts, tw.ts
+├── containers/      # Screen-level components (logic lives here)
+├── features/        # auth/ → slice, actions, saga, selector, helpers
+├── hooks/           # useAppBootstrap, useBaseQuery, etc.
+├── i18n/            # en.json, vi.json
+├── navigation/      # RootNavigation, stackConfig, hooks, index
+├── services/        # axios, navigation, storage, query-client, api/
+├── store/           # store, rootReducer, rootSaga
+├── types/           # typed interfaces by domain
+└── utils/           # buildRequest, createRequestActions, runRequestSaga, helpers/
+```
+
+## Naming Conventions
+
+| Entity | Convention | Example |
+|---|---|---|
+| Components / Screens | `PascalCase.tsx` | `Login.tsx`, `FormInput.tsx` |
+| Feature files | `feature.type.ts` | `auth.slice.ts`, `auth.saga.ts` |
+| Interfaces / Types | `PascalCase` | `SignInPayload`, `AuthState` |
+| Enums | `PascalCase` (no `Enum` suffix except storage) | `AppRoutes`, `StorageEnum` |
+| Hooks | `use` prefix | `useBaseQuery`, `useAppBootstrap` |
+| Redux actions | `featureNameActions` | `signInActions` |
+| Selectors | `select` prefix | `selectIsAuthenticated` |
+| Services | `camelCase.service.ts` | `auth.service.ts` |
+| Path alias | `~` → `src/` | `~features/auth`, `~configs/tw` |
+
+## General Rules
+
+- Every folder must have a barrel `index.ts` for clean imports.
+- Use `~` path alias instead of relative `../../` imports.
+- Every component file must have both a **named export** (for the function) and a **`export default`** at the bottom.
+- Barrel `index.ts` re-exports using `export { default as ComponentName }` — never `export { ComponentName }`.
+- Keep `containers/` for screen logic; `components/` must be purely presentational.
