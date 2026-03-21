@@ -7,7 +7,16 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "dev": "ENVFILE=.env.dev react-native run-android --mode devDebug --appId com.projectname.dev",
+    "stag": "ENVFILE=.env.stag react-native run-android --mode stagDebug --appId com.projectname.stag",
+    "prod": "ENVFILE=.env.prod react-native run-android --mode prodDebug --appId com.projectname",
+    "devapk": "cd android && ENVFILE=.env.dev ./gradlew assembleDevRelease && open app/build/outputs/apk/dev/release",
+    "stagapk": "cd android && ENVFILE=.env.stag ./gradlew assembleStagRelease && open app/build/outputs/apk/stag/release",
+    "prodapk": "cd android && ENVFILE=.env.prod ./gradlew assembleProdRelease && open app/build/outputs/apk/prod/release",
+    "devaab": "cd android && ENVFILE=.env.dev ./gradlew bundleDevRelease && open app/build/outputs/bundle/devRelease",
+    "stagaab": "cd android && ENVFILE=.env.stag ./gradlew bundleStagRelease && open app/build/outputs/bundle/stagRelease",
+    "prodaab": "cd android && ENVFILE=.env.prod ./gradlew bundleProdRelease && open app/build/outputs/bundle/prodRelease"
   },
   "dependencies": {
     "@react-native-community/hooks": "^100.1.0",
