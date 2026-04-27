@@ -7,9 +7,23 @@ import { AppRoutes } from '~configs/constants';
 export type AppStackParamList = {
   [AppRoutes.HOME]: undefined;
   [AppRoutes.ABOUT]: undefined;
+  [AppRoutes.LOGIN]: undefined;
 };
 
 export type AppStackNavigatorScreens = keyof AppStackParamList;
+export type AppRouteName = AppStackNavigatorScreens;
+export type AppRouteParams<T extends AppRouteName> = AppStackParamList[T];
+
+export type AppNavigateArgs<T extends AppRouteName> =
+  undefined extends AppStackParamList[T]
+    ? [name: T, params?: AppStackParamList[T]]
+    : [name: T, params: AppStackParamList[T]];
+
+export type AppNavigationRoute = {
+  [T in AppRouteName]: undefined extends AppStackParamList[T]
+    ? { name: T; params?: AppStackParamList[T] }
+    : { name: T; params: AppStackParamList[T] };
+}[AppRouteName];
 
 // using ['navigation'] to get navigation props
 // using ['route'] to get route props

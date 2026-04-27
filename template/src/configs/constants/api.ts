@@ -1,4 +1,6 @@
-export const API_ROOT = '';
+import Config from 'react-native-config';
+
+export const API_ROOT = Config.API_URL;
 
 export const API = {
   AUTH: {
@@ -6,6 +8,5 @@ export const API = {
     REFRESH: 'auth/refresh',
     USER: 'auth/me',
     DELETE_ACCOUNT: 'auth/delete',
-    WALLET: 'wallet',
   },
 };

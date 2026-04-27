@@ -1,6 +1,6 @@
 # rntemplate
 
-## Current version: 0.75.4
+## Current version: 0.84.1
 
 ## :arrow_forward: Usage
 
@@ -14,15 +14,27 @@ Add a file structure here with the basic details about files, below is an exampl
 ```
 src
 ├── assets
-│   ├── svg
+│   └── svg
 ├── components
 │   ├── common
+│   └── input
 ├── configs
 │   ├── constants
+│   ├── globalRefs.ts
+│   └── tw.ts
 ├── containers
-└── hooks
-└── lang
-└── navigation
-└── services
-└── types
+│   ├── about
+│   ├── home
+│   ├── login
+│   └── index.ts
+├── features
+│   └── auth
+├── hooks
+├── i18n
+├── navigation
+├── services
+│   └── api
+├── store
+├── types
+└── utils
 ```

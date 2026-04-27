@@ -1,0 +1,148 @@
+---
+description: React Native component and screen conventions
+globs: src/**/*.tsx
+alwaysApply: false
+---
+
+# Component & Screen Patterns
+
+## Component Declaration
+
+Always use **named function declarations** (not arrow functions assigned to `const`):
+
+```tsx
+// ✅ GOOD
+export function MyComponent(props: MyComponentProps) { ... }
+
+// ❌ BAD
+export const MyComponent = (props: MyComponentProps) => { ... }
+```
+
+## Export Pattern
+
+Every component file must have **both** a named export on the function **and** a default export at the bottom. The barrel `index.ts` always re-exports via `export { default as X }`:
+
+```tsx
+// ✅ ComponentName.tsx
+export function MyComponent(props: MyComponentProps) { ... }
+
+export default MyComponent;
+```
+
+Barrel `index.ts` must split components and types into two clearly separated sections:
+
+```ts
+// ✅ index.ts
+// ─── Components ──────────────────────────────────────────────────────────────
+export { default as MyComponent } from './MyComponent';
+export { default as AnotherComponent } from './AnotherComponent';
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+export type { MyComponentProps } from './MyComponent';
+export type { AnotherComponentProps } from './AnotherComponent';
+
+// ❌ BAD — interleaved components and types
+export { default as MyComponent } from './MyComponent';
+export type { MyComponentProps } from './MyComponent';
+
+// ❌ BAD — named-only export
+export { MyComponent } from './MyComponent';
+```
+
+---
+
+## Props Typing
+
+Define props as a local `interface` or `type` above the component:
+
+```tsx
+interface MyComponentProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export function MyComponent({ value, onChange }: MyComponentProps) { ... }
+```
+
+Use **discriminated unions** for polymorphic components (see `FormInput.tsx`):
+
+```tsx
+type FormInputProps<TFieldValues extends FieldValues, TName extends Path<TFieldValues>> =
+  | { type: 'text'; inputProps: TextInputProps<TFieldValues, TName> }
+  | { type: 'select'; selectProps: SelectProps<TFieldValues, TName> }
+  | { type: 'radio'; radioProps: RadioProps<TFieldValues, TName> };
+```
+
+## Generic Components
+
+Use generic type parameters for reusable components:
+
+```tsx
+export function FormInput<
+  TFieldValues extends FieldValues,
+  TName extends Path<TFieldValues>,
+>(props: FormInputProps<TFieldValues, TName>) { ... }
+```
+
+## Containers vs Components
+
+| Location | Responsibility |
+|---|---|
+| `src/containers/` | Screen-level logic — Redux dispatch, form state, navigation calls |
+| `src/components/` | Pure presentational — no Redux, no navigation, only props |
+
+## Forms (react-hook-form + yup)
+
+```tsx
+const schema = yup.object({ email: yup.string().email().required() });
+
+const { control, handleSubmit } = useForm<FormValues>({
+  resolver: yupResolver(schema),
+});
+
+// Use FormInput with control prop — never raw TextInput for form fields
+<FormInput control={control} name="email" type="text" ... />
+```
+
+## Common Components
+
+Always use components from `~components/common` instead of the raw React Native equivalents.
+
+### Text
+
+Use `Text` from `~components/common` — never import `Text` directly from `react-native`:
+
+```tsx
+// ✅ GOOD
+import { Text } from '~components/common';
+
+<Text style={tw`text-sm text-gray-900`}>Hello</Text>
+
+// ❌ BAD
+import { Text } from 'react-native';
+```
+
+The custom `Text` applies the project's base font styles via `twrnc` and ensures consistent typography across the app. Any global text defaults (font family, scaling, etc.) only need to be changed in one place.
+
+### Modal
+
+Use `Modal` from `~components/common` instead of `react-native`'s `Modal`:
+
+```tsx
+// ✅ GOOD
+import { Modal } from '~components/common';
+
+// ❌ BAD
+import { Modal } from 'react-native';
+```
+
+---
+
+## i18n
+
+Always use `useTranslation` — never hardcode user-facing strings:
+
+```tsx
+const { t } = useTranslation();
+<Text>{t('common.submit')}</Text>
+```

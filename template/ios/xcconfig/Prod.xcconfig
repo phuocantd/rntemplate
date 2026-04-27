@@ -1,0 +1,13 @@
+//
+//  Prod.xcconfig
+//  ProjectName
+//
+//  Created by Nguyen Phuoc An on 27/4/26.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+#include? "tmp.xcconfig"
+
+ENVFILE = .env.prod

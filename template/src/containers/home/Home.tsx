@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useForm } from 'react-hook-form';
+import { Pressable, ScrollView, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { Header, Safe, Text, Wrapper } from '~components/common';
 import { FormInput } from '~components/input';
 import tw from '~configs/tw';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { logout, selectAuthUser } from '~features/auth';
+import { AppDispatch } from '~store';
 
 type DemoFormValues = {
   fullName: string;
@@ -13,6 +16,8 @@ type DemoFormValues = {
 };
 
 const Home = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector(selectAuthUser);
   const [submittedData, setSubmittedData] = useState<DemoFormValues | null>(
     null,
   );
@@ -42,7 +47,8 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-gray-50`}>
+    <Wrapper>
+      <Header title="Home" />
       <ScrollView
         style={tw`flex-1 bg-gray-50`}
         contentContainerStyle={tw`px-4 py-6`}
@@ -54,6 +60,19 @@ const Home = () => {
         <Text style={tw`text-gray-600 mb-6`}>
           Test `text`, `radio`, `select` via `FormInput` + react-hook-form
         </Text>
+
+        <View style={tw`mb-4 rounded-xl border border-gray-200 bg-white p-4`}>
+          <Text style={tw`text-gray-500 text-xs mb-1`}>Signed in as</Text>
+          <Text style={tw`text-gray-900 font-semibold`}>
+            {user?.username ?? 'Unknown user'}
+          </Text>
+          <Pressable
+            onPress={() => dispatch(logout())}
+            style={tw`items-center rounded-xl py-2 mt-3 border border-red-300 bg-red-50`}
+          >
+            <Text style={tw`text-red-600 font-semibold`}>Logout</Text>
+          </Pressable>
+        </View>
 
         <FormInput
           type="text"
@@ -148,8 +167,9 @@ const Home = () => {
             </Text>
           </View>
         ) : null}
+        <Safe />
       </ScrollView>
-    </SafeAreaView>
+    </Wrapper>
   );
 };
 

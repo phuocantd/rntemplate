@@ -1,9 +1,13 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+def node_require(script)
+  # Resolve script with node to allow for hoisting
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
+
+node_require('react-native/scripts/react_native_pods.rb')
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
@@ -14,21 +18,33 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'ProjectName' do
-  config = use_native_modules!
+config = use_native_modules!
 
+def common_pods(config)
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+end
 
-  post_install do |installer|
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
-  end
+pod 'react-native-config', :path => '../node_modules/react-native-config'
+
+target 'Dev' do
+  common_pods(config)
+end
+
+target 'Stag' do
+  common_pods(config)
+end
+
+target 'Prod' do
+  common_pods(config)
+end
+
+post_install do |installer|
+  react_native_post_install(
+    installer,
+    config[:reactNativePath],
+    :mac_catalyst_enabled => false,
+  )
 end
