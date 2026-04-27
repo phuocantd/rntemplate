@@ -2,17 +2,17 @@ import { useKeyboard } from '@react-native-community/hooks';
 import React from 'react';
 import {
   KeyboardAvoidingView,
-  Modal as RNModal,
   Platform,
   Pressable,
+  Modal as RNModal,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import tw from '~configs/tw';
+import Text from './Text';
 
 export type ModalType = 'center' | 'bottom' | 'full';
 
@@ -56,7 +56,9 @@ export function Modal({
 
   const safeAreaTopStyle = { paddingTop: insets.top };
   const safeAreaSpacerStyle = { height: keyboardShown ? 0 : insets.bottom };
-  const bottomSheetPaddingStyle = { paddingBottom: keyboardShown ? 0 : insets.bottom };
+  const bottomSheetPaddingStyle = {
+    paddingBottom: keyboardShown ? 0 : insets.bottom,
+  };
 
   const header =
     title || showCloseButton ? (
@@ -135,7 +137,9 @@ export function Modal({
        */}
       <KeyboardAvoidingView
         behavior={KB_BEHAVIOR}
-        style={isBottom ? tw`flex-1 justify-end` : tw`flex-1 justify-center px-6`}
+        style={
+          isBottom ? tw`flex-1 justify-end` : tw`flex-1 justify-center px-6`
+        }
         pointerEvents="box-none"
       >
         {/*

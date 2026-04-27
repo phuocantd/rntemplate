@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Header, Safe, Wrapper } from '~components/common';
+import { Header, Safe, Text, Wrapper } from '~components/common';
 import { FormInput } from '~components/input';
 import tw from '~configs/tw';
 import { logout, selectAuthUser } from '~features/auth';
