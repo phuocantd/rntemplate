@@ -14,21 +14,33 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'ProjectName' do
+def common_pods
   config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+end
 
-  post_install do |installer|
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
-  end
+target 'Dev' do
+  common_pods
+end
+
+target 'Stag' do
+  common_pods
+end
+
+target 'Prod' do
+  common_pods
+end
+
+post_install do |installer|
+  config = use_native_modules!
+
+  react_native_post_install(
+    installer,
+    config[:reactNativePath],
+    :mac_catalyst_enabled => false,
+  )
 end
