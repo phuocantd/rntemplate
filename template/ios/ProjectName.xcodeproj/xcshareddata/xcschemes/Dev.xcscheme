@@ -11,7 +11,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "# Type a script or drag a script file from your workspace to insert its path.&#10;echo &quot;.env.dev&quot; &gt; /tmp/envfile&#10;">
+               scriptText = "# Type a script or drag a script file from your workspace to insert its path.&#10;echo &quot;.env.dev&quot; &gt; /tmp/envfile&#10;&#10;set -e&#10;&#10;echo &quot;ENVFILE=.env.dev&quot;&#10;&#10;PROJECT_DIR=&quot;$(cd &quot;$(dirname &quot;$WORKSPACE_PATH&quot;)/..&quot; &amp;&amp; pwd)&quot;&#10;&#10;mkdir -p &quot;$PROJECT_DIR/ios/xcconfig&quot;&#10;&#10;ENVFILE=.env.dev \&#10;ruby &quot;$PROJECT_DIR/node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb&quot; \&#10;&quot;$PROJECT_DIR&quot; \&#10;&quot;$PROJECT_DIR/ios/xcconfig/tmp.xcconfig&quot;&#10;&#10;cat &quot;$PROJECT_DIR/ios/xcconfig/tmp.xcconfig&quot;&#10;">
             </ActionContent>
          </ExecutionAction>
       </PreActions>

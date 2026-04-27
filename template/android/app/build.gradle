@@ -118,7 +118,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-         resValue "string", "build_config_package", "com.projectname"
+        resValue "string", "build_config_package", "com.projectname"
         resValue "string", "app_name", env.get("APP_NAME") ?: "ProjectName"
     }
     signingConfigs {
