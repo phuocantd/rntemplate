@@ -1,0 +1,895 @@
+---
+description: Coding rules and conventions for the React Native TypeScript template project
+alwaysApply: true
+---
+
+# React Native Template — Mimax Code Rules
+
+## Project Overview
+
+- **Tech Stack**: React Native 0.84, TypeScript, Redux Toolkit + redux-saga, TanStack React Query v5, twrnc, react-hook-form + yup, React Navigation v7, i18next, MMKV, axios
+- **Path Alias**: `~` maps to `src/`
+
+## 1. General Conventions
+
+### Naming Conventions
+
+| Entity               | Convention                                     | Example                           |
+| -------------------- | ---------------------------------------------- | --------------------------------- |
+| Components / Screens | `PascalCase.tsx`                               | `Login.tsx`, `FormInput.tsx`      |
+| Feature files        | `feature.type.ts`                              | `auth.slice.ts`, `auth.saga.ts`   |
+| Interfaces / Types   | `PascalCase`                                   | `SignInPayload`, `AuthState`      |
+| Enums                | `PascalCase` (no `Enum` suffix except storage) | `AppRoutes`, `StorageEnum`        |
+| Hooks                | `use` prefix                                   | `useBaseQuery`, `useAppBootstrap` |
+| Redux actions        | `featureNameActions`                           | `signInActions`                   |
+| Selectors            | `select` prefix                                | `selectIsAuthenticated`           |
+| Services             | `camelCase.service.ts`                         | `auth.service.ts`                 |
+
+### File Naming
+
+| Type             | Convention                              | Example                              |
+| ---------------- | --------------------------------------- | ------------------------------------ |
+| Components       | `PascalCase.tsx`                        | `UserProfile.tsx`, `FormInput.tsx`   |
+| Hooks            | `camelCase.ts` with `use` prefix        | `useAuth.ts`, `useFormValidation.ts` |
+| Services         | `camelCase.service.ts`                  | `auth.service.ts`, `api.service.ts`  |
+| Utils/Helpers    | `camelCase.ts` or `camelCase.helper.ts` | `date.helper.ts`, `format.ts`        |
+| Types/Interfaces | `PascalCase.type.ts` or co-located      | `auth.type.ts`, `user.type.ts`       |
+| Constants        | `camelCase.ts` or `PascalCase.ts`       | `storage.ts`, `routes.ts`            |
+
+### Variable Naming
+
+| Type           | Convention                   | Example                                |
+| -------------- | ---------------------------- | -------------------------------------- |
+| Variables      | `camelCase`                  | `userName`, `isLoading`, `hasError`    |
+| Booleans       | `is`/`has`/`can` prefix      | `isValid`, `hasPermission`, `canEdit`  |
+| Arrays         | plural noun or `List` suffix | `users`, `items`, `userList`           |
+| Functions      | verb + noun (camelCase)      | `getUser`, `fetchData`, `onSubmit`     |
+| Event handlers | `on` prefix                  | `onChange`, `onPress`, `onSubmit`      |
+| Callbacks      | `handle` prefix              | `handleChange`, `handleSubmit`         |
+| State          | descriptive noun             | `userData`, `formValues`, `selectedId` |
+
+### Type & Interface Naming
+
+```ts
+// ✅ Interfaces — PascalCase with descriptive suffix
+interface UserProfile { ... }
+interface AuthState { ... }
+interface FormInputProps { ... }
+
+// ✅ Type aliases — PascalCase
+type UserId = string;
+type ApiResponse<T> = { data: T; error: string | null };
+type OnClickCallback = () => void;
+
+// ✅ Enums — PascalCase (no 'Enum' suffix except StorageEnum)
+enum AppRoutes { HOME = 'Home', LOGIN = 'Login' }
+enum StorageEnum { ACCESS_TOKEN, REFRESH_TOKEN }
+
+// ✅ Props interfaces — PascalCase with 'Props' suffix
+interface ButtonProps { label: string; onPress: () => void; }
+interface ModalProps { visible: boolean; children: React.ReactNode; }
+```
+
+### File Structure Rules
+
+- Every folder must have a barrel `index.ts` for clean imports
+- Use `~` path alias instead of relative `../../` imports
+- Folder structure:
+  - `src/components/` — Reusable, presentational only (no Redux, no navigation)
+  - `src/containers/` — Screen-level components (logic lives here)
+  - `src/features/<name>/` — Redux feature modules
+  - `src/hooks/` — Custom hooks
+  - `src/services/` — API services
+  - `src/types/` — Type definitions
+
+## 2. Component Patterns
+
+### Export Pattern
+
+Every component file MUST have **both** named export AND default export:
+
+```tsx
+// ✅ GOOD
+export function MyComponent(props: MyComponentProps) { ... }
+export default MyComponent;
+
+// ❌ BAD
+export const MyComponent = (props: MyComponentProps) => { ... };
+```
+
+### Barrel index.ts Pattern
+
+Split components and types into two clearly separated sections:
+
+```ts
+// ✅ index.ts
+// ─── Components ──────────────────────────────────────────────────────────────
+export { default as MyComponent } from './MyComponent';
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+export type { MyComponentProps } from './MyComponent';
+```
+
+Common mistakes to avoid:
+
+```ts
+// ❌ BAD — interleaved exports (mixing component with type)
+export { default as MyComponent } from './MyComponent';
+export type { MyComponentProps } from './MyComponent';
+export { default as AnotherComponent } from './AnotherComponent';
+export type { AnotherComponentProps } from './AnotherComponent';
+
+// ❌ BAD — named-only export (barrel must use 'default as' pattern)
+export { MyComponent } from './MyComponent';
+```
+
+### Props Typing
+
+Define props as a local `interface` or `type` above the component:
+
+```tsx
+interface MyComponentProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export function MyComponent({ value, onChange }: MyComponentProps) { ... }
+```
+
+## 3. Styling (twrnc)
+
+### Import
+
+Always import the shared `tw` instance:
+
+```ts
+import tw from '~configs/tw';
+```
+
+### No Inline Styles
+
+Never write inline style objects directly on JSX elements:
+
+```tsx
+// ❌ BAD
+<View style={{ flex: 1, backgroundColor: 'white', padding: 16 }} />
+
+// ✅ GOOD
+<View style={tw`flex-1 bg-white p-4`} />
+```
+
+### Use twrnc for Conditional Styles
+
+```tsx
+// ✅ Template literal for static classes
+<View style={tw`flex-1 bg-white p-4`} />
+
+// ✅ tw.style() for conditional/merged classes
+<View style={tw.style('flex-1', isActive && 'bg-primary')} />
+
+// ✅ Array to combine tw + StyleSheet
+<View style={[tw`rounded-2xl`, styles.sheet]} />
+```
+
+### StyleSheet.create
+
+Only for values NOT expressible as Tailwind classes (rgba, percentage heights):
+
+```tsx
+const styles = StyleSheet.create({
+  overlay: { backgroundColor: 'rgba(0,0,0,0.5)' },
+});
+```
+
+### Custom Colors
+
+The only custom color is `primary: '#1E40AF'` — use `bg-primary`, `text-primary`, etc.
+
+### Dark Mode
+
+```tsx
+<View style={tw`bg-white dark:bg-gray-900`} />
+```
+
+## 4. State Management
+
+### Two-track Architecture
+
+| Track                        | Tool                       | Use For                    |
+| ---------------------------- | -------------------------- | -------------------------- |
+| Global / persistent UI state | Redux Toolkit + redux-saga | Auth session, user profile |
+| Server / async data          | TanStack React Query       | API calls, caching         |
+
+### Redux Feature Structure
+
+Each feature lives in `src/features/<name>/` with:
+
+- `auth.actions.ts` — createRequestActions triplets
+- `auth.saga.ts` — watchers + workers
+- `auth.slice.ts` — state shape + extraReducers
+- `auth.selector.ts` — memoized selectors
+- `auth.helpers.ts` — pure helper functions (transform data, format values, validate)
+- `index.ts` — barrel export
+
+### auth.helpers.ts Pattern
+
+Pure functions that transform data or handle business logic without side effects:
+
+```ts
+// ✅ auth.helpers.ts
+export const formatUserName = (firstName: string, lastName: string): string => {
+  return `${lastName} ${firstName}`.trim();
+};
+
+export const validateToken = (token: string | null): boolean => {
+  if (!token) return false;
+  try {
+    // validate token logic
+    return true;
+  } catch {
+    return false;
+  }
+};
+```
+
+**When to use helpers:**
+
+- Data transformation (format date, currency, name)
+- Validation logic (not for forms — that's yup)
+- Business rules calculations
+- Pure computations without side effects
+
+### Redux Actions
+
+Use `createRequestActions` helper (DO NOT manually create action creators):
+
+```ts
+// ✅ GOOD
+export const signInActions = createRequestActions<
+  SignInPayload,
+  SignInResponse
+>('auth/signIn');
+
+// ❌ BAD
+const signInRequest = createAction<SignInPayload>('auth/signInRequest');
+```
+
+### Redux Selectors
+
+Always memoize with `createSelector`:
+
+```ts
+// ✅ GOOD
+export const selectIsAuthenticated = createSelector(
+  selectAuthToken,
+  token => !!token,
+);
+
+// ❌ BAD — inline derivation without memoization
+const isAuth = useAppSelector(state => !!state.auth.token);
+```
+
+## 5. React Query Hooks
+
+**Always prefer the 3 base hooks** over calling `useQuery` / `useMutation` / `useInfiniteQuery` directly.
+
+### API Hooks Pattern
+
+For feature-specific API calls, create custom hooks in `src/hooks/api/` folder:
+
+```
+src/hooks/api/
+├── auth.ts     # useLogin, useSignUp, useProfile, etc.
+├── post.ts     # usePosts, useCreatePost, etc.
+└── index.ts    # barrel export
+```
+
+```ts
+// ✅ src/hooks/api/auth.ts
+import { useBaseQuery, useBaseMutation } from '~hooks';
+
+export const useLogin = () => {
+  return useBaseMutation<AuthResponse, LoginPayload>({
+    url: '/auth/login',
+    method: 'POST',
+  });
+};
+
+export const useProfile = (userId: string) => {
+  return useBaseQuery<UserProfile>({
+    url: `/users/${userId}`,
+    queryKey: ['profile', userId],
+  });
+};
+
+// ✅ Components use the API hook directly
+const LoginScreen = () => {
+  const { mutate, isPending } = useLogin();
+  // ...
+};
+```
+
+```ts
+// ✅ src/hooks/api/index.ts
+export * from './auth';
+export * from './post';
+```
+
+**Benefits:**
+
+- Components don't need to know the API URL/method
+- Easy to add caching, polling, or transformations in one place
+- Centralized API configuration per feature
+- Easier to mock in tests
+
+### useBaseQuery — for GET requests
+
+```tsx
+const { data, isLoading, isError } = useBaseQuery<UserProfile>({
+  url: '/profile',
+  queryKey: ['profile', userId],
+});
+```
+
+### useBaseMutation — for POST/PUT/PATCH/DELETE
+
+```tsx
+const { mutate, isPending } = useBaseMutation<SignInResponse, SignInPayload>({
+  url: '/auth/sign-in',
+  method: 'POST',
+  options: {
+    onSuccess: data => {
+      /* handle success */
+    },
+  },
+});
+
+mutate({ data: { email, password } });
+```
+
+### useBaseInfinite — for paginated lists
+
+```tsx
+const { data, fetchMore, hasNextPage, total, isLoading } = useBaseInfinite<
+  ListResponse,
+  unknown,
+  { page: number; limit: number }
+>({
+  url: '/posts',
+  params: { limit: 20 },
+  pageParamKey: 'page',
+  totalKey: 'total',
+  keyArray: 'data',
+});
+```
+
+### Error Handling
+
+Handle errors at the **component level** — the hook handles the request, you handle the UI:
+
+```tsx
+const { data, isLoading, isError, error } = useBaseQuery<UserProfile>({
+  url: '/profile',
+});
+
+// ✅ Handle error at component level
+if (isError) {
+  return <ErrorMessage message={error?.message || 'Something went wrong'} />;
+}
+
+// ❌ BAD — try-catch inside component logic (use options.onError in mutation)
+try {
+  const result = await fetchData();
+} catch (e) {
+  // handle error
+}
+```
+
+For mutations, use `options.onError` callback:
+
+```tsx
+const { mutate } = useBaseMutation<UserResponse, UserPayload>({
+  url: '/users',
+  method: 'POST',
+  options: {
+    onError: error => {
+      // Show toast, log to analytics, etc.
+      console.error('Create user failed:', error);
+    },
+  },
+});
+```
+
+### Decision Guide
+
+| Scenario                                      | Hook to use       |
+| --------------------------------------------- | ----------------- |
+| Read data (GET)                               | `useBaseQuery`    |
+| Create / Update / Delete                      | `useBaseMutation` |
+| Paginated list / infinite scroll              | `useBaseInfinite` |
+| Global auth state / side effects across sagas | Redux + saga      |
+
+## 6. Navigation
+
+### Route Names
+
+Use `AppRoutes` enum — NEVER magic strings:
+
+```tsx
+// ✅ GOOD
+navigation.navigate(AppRoutes.Home);
+
+// ❌ BAD
+navigation.navigate('Home');
+```
+
+### Adding a New Screen
+
+**Always wrap screen with `Wrapper` component** from `~components/common`:
+
+```tsx
+// ✅ GOOD
+import { Header, Safe, Wrapper } from '~components/common';
+
+const NewScreen = () => (
+  <Wrapper>
+    <Header title="Screen Title" />
+    {/* content */}
+    <Safe />
+  </Wrapper>
+);
+
+// ❌ BAD — missing Wrapper
+const BadScreen = () => (
+  <View>
+    <Text>Content</Text>
+  </View>
+);
+```
+
+**Define route in 2 places:**
+
+1. Add route to `AppRoutes` enum in `src/configs/constants/routes.ts`:
+
+```ts
+export enum AppRoutes {
+  HOME = 'Home',
+  NEW_SCREEN = 'NewScreen', // add here
+}
+```
+
+2. Add param type to `AppStackParamList` in `src/types/navigation.type.ts`:
+
+```ts
+export type AppStackParamList = {
+  [AppRoutes.HOME]: undefined;
+  [AppRoutes.NEW_SCREEN]: undefined; // add here
+};
+```
+
+### Navigation Inside Components
+
+Use typed wrappers — NEVER the raw hooks:
+
+```tsx
+// ✅ GOOD
+const navigation = useAppNavigation<AppStackParamList>();
+const route = useAppRoute<AppRoutes.Home>();
+
+// ❌ BAD
+const navigation = useNavigation();
+```
+
+### Navigation Outside React (sagas, services)
+
+Use `navigationService` singleton:
+
+```tsx
+import { navigationService } from '~services/navigation.service';
+
+navigationService.navigate(AppRoutes.Home);
+navigationService.reset({ index: 0, routes: [{ name: AppRoutes.Login }] });
+```
+
+## 7. API & Services
+
+### Service Objects — plain objects, NOT classes
+
+```tsx
+// ✅ GOOD
+export const postService = {
+  getById: (id: string): Promise<Post> => request.get(`/posts/${id}`),
+  create: (payload: CreatePostPayload): Promise<Post> => request.post('/posts', payload),
+};
+
+// ❌ BAD — class-based service
+class PostService { ... }
+```
+
+### Use request wrapper — NEVER call axios directly
+
+```tsx
+import request from '~utils/request';
+
+const data = await request.get<ResponseType>('/endpoint');
+const data = await request.post<ResponseType>('/endpoint', payload);
+```
+
+### Environment Variables
+
+```tsx
+// ✅ GOOD
+import { API_URL } from '~configs/constants';
+
+// ❌ BAD
+const url = 'https://api.example.com';
+```
+
+### Storage
+
+```tsx
+import { StorageService } from '~services/storage.service';
+import { StorageEnum } from '~configs/constants';
+
+StorageService.set(StorageEnum.AccessToken, token);
+const token = StorageService.getString(StorageEnum.AccessToken);
+```
+
+## 8. Forms (react-hook-form + yup)
+
+```tsx
+const schema = yup.object({ email: yup.string().email().required() });
+
+const { control, handleSubmit } = useForm<FormValues>({
+  resolver: yupResolver(schema),
+});
+
+// Use FormInput with control prop — NEVER raw TextInput
+<FormInput control={control} name="email" type="text" ... />
+```
+
+## 9. Common Components
+
+Always use components from `~components/common` instead of raw React Native equivalents:
+
+### Text
+
+```tsx
+// ✅ GOOD
+import { Text } from '~components/common';
+<Text style={tw`text-sm text-gray-900`}>Hello</Text>;
+
+// ❌ BAD
+import { Text } from 'react-native';
+```
+
+### Modal
+
+```tsx
+// ✅ GOOD
+import { Modal } from '~components/common';
+
+// ❌ BAD
+import { Modal } from 'react-native';
+```
+
+## 10. i18n
+
+Always use `useLanguages` hook — NEVER hardcode user-facing strings:
+
+```tsx
+// ✅ GOOD
+import { useLanguages } from '~hooks';
+
+const { t } = useLanguages();
+<Text>{t('common.submit')}</Text>;
+
+// ❌ BAD — use react-i18next directly
+import { useTranslation } from 'react-i18next';
+```
+
+The `useLanguages` hook wraps `useTranslation` and handles language persistence automatically.
+
+## 11. Persistence
+
+- Only the `auth` slice is persisted (MMKV via `mmkvStorage` adapter)
+- Never add new slices to persist whitelist without considering privacy/performance
+- Never import `AsyncStorage` — always use `StorageService` or MMKV directly
+
+## 12. Creating New Components
+
+### Folder Structure
+
+```
+src/components/<category>/
+├── index.ts           # barrel export
+├── ComponentName.tsx  # component + default export
+├── ComponentName2.tsx
+└── index.ts
+```
+
+### Component File Pattern
+
+```tsx
+// ✅ MyComponent.tsx
+import React from 'react';
+import { View } from 'react-native';
+import tw from '~configs/tw';
+
+interface MyComponentProps {
+  title: string;
+  onPress?: () => void;
+}
+
+export function MyComponent({ title, onPress }: MyComponentProps) {
+  return <View style={tw`p-4`}>{title}</View>;
+}
+
+export default MyComponent;
+```
+
+### Barrel index.ts Pattern
+
+```ts
+// ✅ index.ts
+// ─── Components ──────────────────────────────────────────────────────────────
+export { default as MyComponent } from './MyComponent';
+export { default as AnotherComponent } from './AnotherComponent';
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+export type { MyComponentProps } from './MyComponent';
+export type { AnotherComponentProps } from './AnotherComponent';
+```
+
+### Rules
+
+- Use **named function declaration** (`export function`) — NOT arrow function
+- Always include **both named AND default export**
+- Props defined as **local interface** above the component
+- Import `tw` from `~configs/tw` — never create new instance
+- Use components from `~components/common` instead of raw React Native
+
+## 13. Creating New Hooks
+
+### When to Create a Hook
+
+Create a custom hook when:
+
+- Logic is reused across multiple components
+- Logic needs to manage state or side effects
+- Logic is complex and should be isolated
+
+### Folder Structure
+
+```
+src/hooks/
+├── index.ts           # barrel export
+├── useMyHook.ts       # hook file
+├── useAnotherHook.ts
+└── index.ts
+```
+
+### Hook File Pattern
+
+```ts
+// ✅ useMyHook.ts
+import { useState, useCallback } from 'react';
+
+export function useMyHook(initialValue: string) {
+  const [value, setValue] = useState(initialValue);
+
+  const reset = useCallback(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  return { value, setValue, reset };
+}
+```
+
+### Common Reusable Hooks
+
+| Hook           | Purpose                                                   |
+| -------------- | --------------------------------------------------------- |
+| `useDidMount`  | Run callback once on mount (like componentDidMount)       |
+| `useDidUpdate` | Run callback when dependencies change (skip first render) |
+| `usePrevious`  | Get previous value of a variable                          |
+| `useInterval`  | Set up an interval that auto-clears on unmount            |
+| `useRefresh`   | Provide a refresh function for React Query                |
+
+### Rules
+
+- Use **named function declaration** (`export function`) — NOT arrow function
+- Hook name must start with `use` prefix
+- Import from `~hooks` path alias
+- Keep hooks focused — one responsibility per hook
+- Extract reusable logic into hooks, not components
+
+## 14. TypeScript Strictness
+
+### No `any` Type
+
+Never use `any` — always define proper types:
+
+```tsx
+// ❌ BAD
+const handleData = (data: any) => { ... };
+
+// ✅ GOOD
+interface UserData {
+  id: string;
+  name: string;
+}
+const handleData = (data: UserData) => { ... };
+```
+
+### Generic Types
+
+Use generics for reusable components and functions:
+
+```tsx
+// ✅ GOOD — generic component
+export function List<T>({ items, renderItem }: ListProps<T>) {
+  return items.map((item, index) => renderItem(item, index));
+}
+
+// ✅ GOOD — generic function
+function parseResponse<T>(response: ApiResponse<T>): T {
+  return response.data;
+}
+```
+
+### Type Inference
+
+Let TypeScript infer types when obvious:
+
+```tsx
+// ✅ GOOD — TypeScript infers 'string'
+const name = 'John';
+
+// ✅ GOOD — explicit type when not obvious
+const fetchUser = async (): Promise<User> => { ... };
+```
+
+## 15. Performance Optimization
+
+### useCallback for Callbacks
+
+Wrap callback functions in `useCallback` when passed as props:
+
+```tsx
+// ✅ GOOD — stable callback reference
+const onPress = useCallback(() => {
+  doSomething(value);
+}, [value]);
+
+<Button onPress={onPress} />
+
+// ❌ BAD — new function every render
+<Button onPress={() => doSomething(value)} />
+```
+
+### useMemo for Expensive Computations
+
+Memoize expensive calculations:
+
+```tsx
+// ✅ GOOD
+const sortedList = useMemo(() => {
+  return items.slice().sort((a, b) => a.name.localeCompare(b.name));
+}, [items]);
+
+// ❌ BAD — sorting on every render
+const sortedList = items.slice().sort(...);
+```
+
+### React.memo for Pure Components
+
+Wrap components that re-render unnecessarily:
+
+```tsx
+// ✅ GOOD
+const ExpensiveList = React.memo(({ items }) => {
+  return items.map(item => <Item key={item.id} {...item} />);
+});
+
+// ❌ BAD — all items re-render when any item changes
+const ExpensiveList = ({ items }) => { ... };
+```
+
+## 16. Conditional Rendering
+
+### Use ternary for simple conditions
+
+```tsx
+// ✅ GOOD — simple conditional
+{
+  isLoading ? <Spinner /> : <Content />;
+}
+
+// ❌ BAD — ternary for complex logic
+{
+  isLoading ? <Spinner /> : data ? <Content /> : <Empty />;
+}
+```
+
+### Use logical operators for guard clauses
+
+```tsx
+// ✅ GOOD — render based on condition
+{
+  showBanner && <Banner />;
+}
+{
+  error && <ErrorMessage error={error} />;
+}
+
+// ❌ BAD — complex conditionals in JSX
+{
+  user && user.isAdmin && user.permissions && <AdminPanel />;
+}
+```
+
+### Extract complex conditions
+
+```tsx
+// ✅ GOOD — readable condition
+const canShowAdminPanel = user?.isAdmin && hasPermission;
+{
+  canShowAdminPanel && <AdminPanel />;
+}
+
+// ❌ BAD — inline complex logic
+{
+  user?.isAdmin && user.permissions?.includes('admin') && !isLoading && (
+    <AdminPanel />
+  );
+}
+```
+
+## 17. Console Logs
+
+### Remove console statements before production
+
+Never leave `console.log`, `console.warn`, `console.error` in production:
+
+```tsx
+// ❌ BAD — console statements left in code
+console.log('API response:', data);
+console.warn('Deprecated method used');
+
+// ✅ GOOD — use conditional console in development only
+if (__DEV__) {
+  console.log('API response:', data);
+}
+
+// ✅ GOOD — use proper logging service for production
+logger.info('API response', { data });
+```
+
+## 18. Constants Organization
+
+### Centralize constants in `src/configs/constants/`
+
+```ts
+// ✅ GOOD — structured constants
+src/configs/constants/
+├── routes.ts      // AppRoutes enum
+├── storage.ts     // StorageEnum
+├── api.ts         // API endpoints, timeouts
+└── index.ts       // re-export all
+
+// ✅ GOOD — use typed constants
+import { AppRoutes } from '~configs/constants';
+navigation.navigate(AppRoutes.HOME);
+```
+
+### Avoid magic strings/numbers
+
+```tsx
+// ❌ BAD — magic values
+const timeout = 5000;
+const maxRetries = 3;
+
+// ✅ GOOD — named constants
+import { API_TIMEOUT, MAX_RETRIES } from '~configs/constants';
+```
