@@ -1,40 +1,70 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# ProjectName
 
-# Getting Started
+Starter project generated from `phuocantd/rntemplate`.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Tech Stack
 
-## Step 1: Start Metro
+- React Native 0.84.x
+- TypeScript
+- Redux Toolkit + Redux Saga
+- React Query
+- React Navigation
+- i18next (`en`, `vi`)
+- `twrnc` (Tailwind-style utilities)
+- Android flavors: `dev`, `stag`, `prod`
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Requirements
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- Node.js `>= 22.11.0`
+- Android Studio (for Android)
+- Xcode + CocoaPods (for iOS)
+- Environment setup from React Native docs:
+	https://reactnative.dev/docs/set-up-your-environment
+
+## Installation
+
+Install JavaScript dependencies:
 
 ```sh
-# Using npm
+npm install
+```
+
+Install iOS pods (macOS):
+
+```sh
+bundle install
+bundle exec pod install
+```
+
+## Run App
+
+Start Metro:
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+Run Android:
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### Android flavors
+Run iOS:
 
-This template includes environment-based Android flavors and matching scripts:
+```sh
+npm run ios
+```
+
+## Android Flavors
+
+This project includes 3 environments:
+
+- `dev`
+- `stag`
+- `prod`
+
+Run debug builds by flavor:
 
 ```sh
 npm run dev
@@ -42,80 +72,72 @@ npm run stag
 npm run prod
 ```
 
-To generate Android artifacts with the correct `.env` file:
+Build release APK:
 
 ```sh
 npm run devapk
 npm run stagapk
 npm run prodapk
+```
 
+Build release AAB:
+
+```sh
 npm run devaab
 npm run stagaab
 npm run prodaab
 ```
 
-If you build directly from Android Studio or run Gradle yourself, make sure the selected flavor matches the intended environment. The flavor mapping is configured in `android/app/build.gradle`, and the npm scripts also pass `ENVFILE` explicitly.
+Scripts automatically map `ENVFILE` to:
 
-### iOS
+- `.env.dev`
+- `.env.stag`
+- `.env.prod`
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+If you build directly from Android Studio/Gradle, choose the matching flavor for the target environment.
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## Project Structure
 
-```sh
-bundle install
+```text
+src
+├── assets
+│   └── svg
+├── components
+│   ├── common
+│   └── input
+├── configs
+│   └── constants
+├── containers
+│   ├── about
+│   ├── home
+│   └── login
+├── features
+│   └── auth
+├── hooks
+├── i18n
+├── navigation
+├── services
+│   └── api
+├── store
+├── types
+└── utils
 ```
 
-Then, and every time you update your native dependencies, run:
+## Useful Commands
 
 ```sh
-bundle exec pod install
+npm run lint
+npm test
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## Notes
 
-```sh
-# Using npm
-npm run ios
+- Change app entry UI in `App.tsx`.
+- Native Android config is in `android/`.
+- Native iOS config is in `ios/`.
 
-# OR using Yarn
-yarn ios
-```
+## References
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- React Native: https://reactnative.dev
+- Environment setup: https://reactnative.dev/docs/set-up-your-environment
+- Troubleshooting: https://reactnative.dev/docs/troubleshooting
