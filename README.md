@@ -5,7 +5,7 @@
 ## :arrow_forward: Usage
 
 ```sh
-npx react-native init [ProjectName] --template https://github.com/phuocantd/rntemplate.git
+ npx @react-native-community/cli init [ProjectName] --template https://github.com/phuocantd/rntemplate.git
 ```
 
 ###  :file_folder: File Structure
